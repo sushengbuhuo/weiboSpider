@@ -117,7 +117,7 @@ class Weibo(object):
     def handle_html(self, url):
         """处理html"""
         try:
-            html = requests.get(url, cookies=self.cookie).content
+            html = requests.get(url, cookies=self.cookie,verify=False).content
             selector = etree.HTML(html)
             return selector
         except Exception as e:
@@ -509,7 +509,7 @@ class Weibo(object):
                     video_link = video_link.replace(
                         'm.weibo.cn/s/video/show', 'm.weibo.cn/s/video/object')
                     wb_info = requests.get(video_link,
-                                           cookies=self.cookie).json()
+                                           cookies=self.cookie,verify=False).json()
                     video_url = wb_info['data']['object']['stream'].get(
                         'hd_url')
                     if not video_url:

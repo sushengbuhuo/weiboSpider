@@ -29,14 +29,19 @@ jieba.analyse.set_stop_words(f'{abspath}/EDA/stopwords.txt')
 
 # %%
 # config配置读取
-
+print(sys.argv)
 fp = sys.argv[1]
+#fp='1744395855.csv'
 bozhu = fp.split('/')[-2]
+#bozhu='李健'
 # 存储文件夹
 
 # %%
 # 加载数据
-weibo = pd.read_csv(fp)
+f=open(fp,'r', encoding='UTF-8')
+#weibo = pd.read_csv(f,delimiter="\t")
+weibo = pd.read_csv(f)
+print(weibo)
 print("Weibo shape : ", weibo.shape)
 weibo.head(1)
 
@@ -68,11 +73,12 @@ wc = WordCloud(font_path='EDA/KaiTi.ttf',
                 background_color="white",
                 margin=5)
 plot_pic(f'weibo/{bozhu}/word_cloud_pic.png', key_words)
+#plot_pic(f'weibo/word_cloud_pic.png', key_words)
 # 1、传入[（key，weighft{bozhu}/）,...]列表生成词云
-
+f=open(fp,'r', encoding='UTF-8')
 # %%
 # 2-转评赞曲线图
-publish_data = pd.read_csv(fp, index_col="发布时间", parse_dates=True)[['点赞数','转发数','评论数']]
+publish_data = pd.read_csv(f, index_col="发布时间", parse_dates=True)[['点赞数','转发数','评论数']]
 # publish_data = pd.concat([pd.read_csv(fp1, index_col="发布时间", parse_dates=True), pd.read_csv(fp2, index_col="发布时间", parse_dates=True)])[['点赞数','转发数','评论数']]
 
 avg_M_df = publish_data.resample('M').sum()
@@ -82,12 +88,13 @@ plt.figure(figsize=(15, 10))
 plt.title(f"{bozhu}老师 单月转评赞总数")
 sns_plot = sns.lineplot(data=avg_M_df)
 plt.savefig(f"weibo/{bozhu}/pic2.png", bbox_inches='tight', dpi=300)
+#plt.savefig(f"weibo/pic2.png", bbox_inches='tight', dpi=300)
 plt.show()
 
-
+f=open(fp,'r', encoding='UTF-8')
 # %%
 # 3-原创转发数
-publish_data = pd.read_csv(fp, index_col="发布时间", parse_dates=True)[['是否为原创微博']].astype('int')
+publish_data = pd.read_csv(f, index_col="发布时间", parse_dates=True)[['是否为原创微博']].astype('int')
 yuanchuang = publish_data[publish_data['是否为原创微博'] == 1]
 zhuanfa = publish_data[publish_data['是否为原创微博'] == 0]
 yuanchuang.columns = ['原创']
@@ -96,7 +103,7 @@ zhuanfa['转发'] = zhuanfa['转发'].apply(lambda x: 1)
 
 yuanchuang = yuanchuang.resample('M').sum()
 zhuanfa = zhuanfa.resample('M').sum()
-df = pd.merge(yuanchuang['原创'], zhuanfa['转发'], how='left', on='发布时间').fillna(0).astype('int')
+df = pd.merge(yuanchuang['原创'].to_frame(), zhuanfa['转发'].to_frame(), how='left', on='发布时间').fillna(0).astype('int')
 
 df.rename(columns={'原创': '当月原创微博数', '转发': '当月转发微博数'}, inplace=True)
 
@@ -105,13 +112,14 @@ plt.title(f"{bozhu} 微博原创与转发量 => 干货满满")
 sns.lineplot(data=df)
 # plt.axhline(y=30, xmin=0.0, xmax=0.99, color='r', linestyle = "--", linewidth=3)
 plt.savefig(f"weibo/{bozhu}/pic3.png", bbox_inches='tight',dpi=300)
+#plt.savefig(f"weibo/pic3.png", bbox_inches='tight',dpi=300)
 plt.show()
 
 
 # %%
 # 4 饼图-发布工具，原创转发比
-
-publish_tool = pd.read_csv(fp)[['发布工具']]
+f=open(fp,'r', encoding='UTF-8')
+publish_tool = pd.read_csv(f)[['发布工具']]
 
 t = sum(publish_tool['发布工具'].value_counts()) * 0.008
 new_dict = {k:v for k,v in dict(publish_tool['发布工具'].value_counts()).items() if k.strip() != '无' and v > t}
@@ -130,6 +138,7 @@ plt.pie(data, explode=explodes,labels=lbs, autopct="%1.1f%%",
 plt.title(f"{bozhu}老师最喜爱的微博交流工具")
 plt.axis('equal')  # 设置x，y轴刻度一致，以使饼图成为圆形。
 plt.savefig(f"weibo/{bozhu}/pic4.png", dpi=300, bbox_inches='tight')
+#plt.savefig(f"weibo/pic4.png", dpi=300, bbox_inches='tight')
 plt.show()
 
 
